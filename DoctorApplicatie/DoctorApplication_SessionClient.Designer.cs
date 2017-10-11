@@ -51,6 +51,7 @@
             this.Distancelbl = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.InformationBtn = new System.Windows.Forms.Button();
+            this.AstrandButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
             this.SuspendLayout();
@@ -222,7 +223,6 @@
             this.label2.Size = new System.Drawing.Size(28, 17);
             this.label2.TabIndex = 27;
             this.label2.Text = "KM";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // InformationBtn
             // 
@@ -234,11 +234,22 @@
             this.InformationBtn.UseVisualStyleBackColor = true;
             this.InformationBtn.Click += new System.EventHandler(this.InformationBtn_Click);
             // 
+            // AstrandButton
+            // 
+            this.AstrandButton.Location = new System.Drawing.Point(464, 13);
+            this.AstrandButton.Name = "AstrandButton";
+            this.AstrandButton.Size = new System.Drawing.Size(152, 28);
+            this.AstrandButton.TabIndex = 29;
+            this.AstrandButton.Text = "Start Avans-Ästrand";
+            this.AstrandButton.UseVisualStyleBackColor = true;
+            this.AstrandButton.Click += new System.EventHandler(this.AstrandButton_Click);
+            // 
             // DoctorApplication_SessionClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1465, 872);
+            this.Controls.Add(this.AstrandButton);
             this.Controls.Add(this.InformationBtn);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.Distancelbl);
@@ -258,7 +269,6 @@
             this.Controls.Add(this.messageTxt);
             this.Name = "DoctorApplication_SessionClient";
             this.Text = "DoctorApplication_SessionClient";
-            this.Load += new System.EventHandler(this.DoctorApplication_SessionClient_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
             this.ResumeLayout(false);
@@ -285,5 +295,6 @@
         private System.Windows.Forms.Label Distancelbl;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button InformationBtn;
+        private System.Windows.Forms.Button AstrandButton;
     }
 }

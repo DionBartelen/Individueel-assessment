@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace DoctorApplicatie
@@ -121,16 +116,6 @@ namespace DoctorApplicatie
             
         }
 
-        private void DoctorApplication_SessionClient_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void InformationBtn_Click(object sender, EventArgs e)
         {
             
@@ -149,6 +134,11 @@ namespace DoctorApplicatie
                 "Unfollow: this button will close this form, be advised the the session of the patiënt is still running"
                 );
 
+        }
+
+        private void AstrandButton_Click(object sender, EventArgs e)
+        {
+            connection.StartAstrand(sessionID);
         }
     }
 }

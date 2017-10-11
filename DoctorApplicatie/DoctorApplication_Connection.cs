@@ -25,6 +25,7 @@ namespace DoctorApplicatie
         Boolean isConnected;
         DoctorApplication_Session doctorApplication_Session;
         DoctorAplicatie application;
+
         public DoctorApplication_Connection(string username, string password, DoctorAplicatie application)
         {
             this.application = application;
@@ -44,6 +45,8 @@ namespace DoctorApplicatie
             sendLogin(username, password);
         }
 
+        //Read from Server
+        #region
         public void Read()
         {
             while (isConnected)
@@ -102,6 +105,10 @@ namespace DoctorApplicatie
                 }
             }
         }
+        #endregion
+
+        //Processs answer from Server
+        #region
         public void ProcessAnswer(string information)
         {
             
@@ -154,16 +161,24 @@ namespace DoctorApplicatie
                 double distance = jsonData.data.data.Distance;
                 int pulse = jsonData.data.data.Pulse;
                 ErgometerData data = new ErgometerData(pulse, rpm, speed, distance, time, 0, 0, power);
-                checkData(session, data);
+                UpdateDataFromSession(session, data);
 
             }
             else if(jsonData.id == "doctor/UnfollowPatient")
             {
                 
+            } else if (jsonData.id == "Doctor/StartAstrand")
+            {
+                if (jsonData.data.status == "ok")
+                {
+                    new Thread(() => { MessageBox.Show("Ästrand test gestart"); }).Start();
+                }
             }
-
         }
+        #endregion
 
+        //Send to Server
+        #region
         public void Send(string message)
         {
             System.Diagnostics.Debug.WriteLine("Send: \r\n" + message);
@@ -180,11 +195,11 @@ namespace DoctorApplicatie
             {
                 _stream.Write(buffer, 0, buffer.Length);
             }
-            
-
-
         }
+        #endregion
 
+        //Send login to Server
+        #region
         public void sendLogin(string username, string password)
         {
             dynamic sendLogin = new
@@ -200,7 +215,10 @@ namespace DoctorApplicatie
 
             Send(JsonConvert.SerializeObject(sendLogin));
         }
+        #endregion
 
+        //Start training from client
+        #region
         public void startTraining(String patientID)
         {
             dynamic startTraining = new
@@ -214,9 +232,11 @@ namespace DoctorApplicatie
             };
 
             Send(JsonConvert.SerializeObject(startTraining));
-
         }
+        #endregion
 
+        //Stop training from client
+        #region
         public void stopTraining(String patientID)
         {
             dynamic stopTraining = new
@@ -231,10 +251,11 @@ namespace DoctorApplicatie
 
             };
             Send(JsonConvert.SerializeObject(stopTraining));
-
-
         }
+        #endregion
 
+        //Send message to client
+        #region
         public void sendMessageToClient(String message, String patientID)
         {
             dynamic sendMessageToClient = new
@@ -250,10 +271,11 @@ namespace DoctorApplicatie
 
             };
             Send(JsonConvert.SerializeObject(sendMessageToClient));
-
-
         }
+        #endregion
 
+        //Send message to all clients
+        #region
         public void sendMessagetoAllClients(String message)
         {
             dynamic sendMessageToAllClients = new
@@ -267,9 +289,11 @@ namespace DoctorApplicatie
 
             };
             Send(JsonConvert.SerializeObject(sendMessageToAllClients));
-
         }
+        #endregion
 
+        //Set power from client
+        #region
         public void setPower(string power, String patientID)
         {
             dynamic setPower = new
@@ -282,10 +306,12 @@ namespace DoctorApplicatie
                 }
 
             };
-
             Send(JsonConvert.SerializeObject(setPower));
-
         }
+        #endregion
+
+        //Get session list
+        #region
         public void getSessions()
         {
             dynamic getSessions = new
@@ -295,7 +321,10 @@ namespace DoctorApplicatie
             };
             Send(JsonConvert.SerializeObject(getSessions));
         }
+        #endregion
 
+        //Get users from server
+        #region
         public void GetUsers()
         {
             dynamic request = new
@@ -304,7 +333,10 @@ namespace DoctorApplicatie
             };
             Send(JsonConvert.SerializeObject(request));
         }
+        #endregion
 
+        //Get historic data
+        #region
         public void getOlderData(string username)
         {
             dynamic request = new
@@ -317,7 +349,10 @@ namespace DoctorApplicatie
             };
             Send(JsonConvert.SerializeObject(request));
         }
+        #endregion
 
+        //Handle historic data
+        #region
         public void HandleHistoricData(dynamic jsonObject)
         {
             List<TrainSession> trainsessions = new List<TrainSession>();
@@ -333,9 +368,11 @@ namespace DoctorApplicatie
             DoctorApplication_Trainsessions TrainsessionsForm = new DoctorApplication_Trainsessions();
             TrainsessionsForm.SetAllSessions(trainsessions);
             doctorApplication_Session.RunTrainSessionForm(TrainsessionsForm);
-
         }
-            
+        #endregion
+
+        //Folow patient
+        #region
         public void FollowPatient(string SessionId)
         {
             dynamic followPatient = new
@@ -345,13 +382,13 @@ namespace DoctorApplicatie
                 {
                     username = SessionId
                 }
-
             };
-
             Send(JsonConvert.SerializeObject(followPatient));
-
         }
+        #endregion
 
+        //Unfollow patient
+        #region
         public void UnFollowPatient(string SessionId)
         {
             dynamic unFollowPatient = new
@@ -363,25 +400,36 @@ namespace DoctorApplicatie
                 }
 
             };
-
             Send(JsonConvert.SerializeObject(unFollowPatient));
-
         }
+        #endregion
 
+        //Close connection
+        #region
         public void close()
         {
-            //stream.Close();
-            _sslStream.Close();
+            if (_SSL)
+            {
+                _stream.Close();
+            }
+            else
+            {
+                _sslStream.Close();
+            }          
             client.Close();
         }
+        #endregion
 
-
+        //Validate ssl certificate
+        #region
         public static bool ValidateCert(object sender, X509Certificate certificate,
               X509Chain chain, SslPolicyErrors sslPolicyErrors) => sslPolicyErrors == SslPolicyErrors.None;
+        #endregion
 
-        public void checkData(string dataSessionId, ErgometerData data)
+        //Update data from session
+        #region
+        public void UpdateDataFromSession(string dataSessionId, ErgometerData data)
         { 
-            
             foreach (DoctorApplication_SessionClient s in doctorApplication_Session.followed_sessions)
             {
                 if(s.sessionID == dataSessionId)
@@ -391,8 +439,23 @@ namespace DoctorApplicatie
                 }
             }
         }
+        #endregion
 
+        //Start Astrand test
+        #region
+        public void StartAstrand(string SessionId)
+        {
+            dynamic startAstrand = new
+            {
+                id = "doctor/StartAstrand",
+                data = new
+                {
+                    client = SessionId
+                }
+            };
+            Send(JsonConvert.SerializeObject(startAstrand));
+        }
+        #endregion
     }
-
 }
 

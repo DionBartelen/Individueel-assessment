@@ -17,8 +17,7 @@ namespace WindowsFormsApp1
 {
     public class Client
     {
-        //VR_Connector vrc;
-        private VRConnector2 vrc;
+        private Astrand astrand;
         private readonly bool _SSL = false;
         private readonly SslStream _sslStream;
         private readonly NetworkStream _stream;
@@ -145,8 +144,10 @@ namespace WindowsFormsApp1
                 }
                 else
                 {
-                    vrc = new VRConnector2();
-                    new Thread(() => { MessageBox.Show("You are now connected, please put on VR glasses on now"); }).Start();
+                    ChatPanel panel = new ChatPanel();
+                    Thread t = new Thread(() => panel.ShowDialog());
+                    t.Start();
+                    astrand = new Astrand(panel, this);
                 }
 
             }
@@ -159,7 +160,10 @@ namespace WindowsFormsApp1
                 ergometerCOM?.SetPower((int)jsonData.data.power);
                 simulation?.SetPower((int)jsonData.data.power);
             }
-
+            if (jsonData.id == "StartAstrand")
+            {
+                new Thread(StartAstrand).Start();
+            }
         }
 
         public void Send(string message)
@@ -182,6 +186,19 @@ namespace WindowsFormsApp1
 
         }
 
+        public ErgometerData GetErgoData()
+        {
+            if (simulation == null && ergometerCOM != null)
+            {
+                return ergometerCOM.GetData();
+            }
+            else if (simulation != null)
+            {
+                return simulation.GetData();
+            }
+                return null;
+        }
+
         public void GetData()
         {
             while (sessionID == null)
@@ -195,7 +212,7 @@ namespace WindowsFormsApp1
                 {
                     System.Diagnostics.Debug.WriteLine(isConnected);
                     Healthcare_test.ErgometerData ergometerData = ergometerCOM.GetData();
-                    vrc.UpdateBikePanelInVR(ergometerData);
+                    //vrc.UpdateBikePanelInVR(ergometerData);
                     dynamic ergometerdata = new
                     {
                         id = "data",
@@ -221,7 +238,7 @@ namespace WindowsFormsApp1
                 {
                     System.Diagnostics.Debug.WriteLine(isConnected);
                     Healthcare_test.ErgometerData ergometerData2 = simulation.GetData();
-                    vrc.UpdateBikePanelInVR(ergometerData2);
+                    //vrc.UpdateBikePanelInVR(ergometerData2);
                     dynamic ergometerdata2 = new
                     {
                         id = "data",
@@ -265,7 +282,7 @@ namespace WindowsFormsApp1
 
         public void HandleNewMessageFromDoctor(string message)
         {
-            vrc.HandeMessageFromDoctor(message);
+            //vrc.HandeMessageFromDoctor(message);
         }
 
         public void close()
@@ -317,9 +334,11 @@ namespace WindowsFormsApp1
             {
                 System.Diagnostics.Debug.WriteLine("error: " + e.Message);
             }
+        }
 
-
-
+        public void StartAstrand()
+        {
+            astrand.Start();
         }
 
         public static bool ValidateCert(object sender, X509Certificate certificate,

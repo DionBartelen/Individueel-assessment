@@ -101,7 +101,7 @@ namespace Server
                     {
                         _stream.Flush();
                     }
-                    
+
                     string toReturn = response.ToString().Substring(4);
                     System.Diagnostics.Debug.WriteLine("Received at server: \r\n" + toReturn);
                     ProcesAnswer(toReturn);
@@ -193,8 +193,8 @@ namespace Server
                 }
                 else if (jsonObject.id == "doctor/message/toClient")
                 {
-                    string patientId = (string) jsonObject.data.patientiD;
-                    string message = (string) jsonObject.data.messageId;
+                    string patientId = (string)jsonObject.data.patientiD;
+                    string message = (string)jsonObject.data.messageId;
                     SendMessageToSingleClient(patientId, message);
                 }
                 else if (jsonObject.id == "doctor/message/toAll")
@@ -240,6 +240,17 @@ namespace Server
                     else
                     {
                         NoPermission("doctor/FollowPatient");
+                    }
+                }
+                else if (jsonObject.id == "doctor/StartAstrand")
+                {
+                    if (IsDoctor)
+                    {
+                        StartAstrandFromPatient((string)jsonObject.data.client);
+                    }
+                    else
+                    {
+                        NoPermission("doctor/StartAstrand");
                     }
                 }
             }
@@ -371,7 +382,7 @@ namespace Server
         {
             try
             {
-                string session = (string) jsonObject.session;
+                string session = (string)jsonObject.session;
                 int power = jsonObject.data.power;
                 double speed = jsonObject.data.speed;
                 int time = jsonObject.data.time;
@@ -396,7 +407,7 @@ namespace Server
                         id = "data",
                         sessionId = session,
                         data = new
-                        {     
+                        {
                             data = data
                         }
                     };
@@ -642,6 +653,48 @@ namespace Server
             catch (Exception e)
             {
                 Send(JsonConvert.SerializeObject(Commands.FollowPatientError(e.Message)));
+            }
+        }
+        #endregion
+
+        //StartAstrand from patient
+        #region
+        public void StartAstrandFromPatient(string patientId)
+        {
+            try
+            {
+
+                Session clientToStart = Program.GetSessionWithUsername(patientId);
+                if (clientToStart != null)
+                {
+                    dynamic answer = new
+                    {
+                        id = "StartAstrand",
+                        data = new
+                        {
+
+                        }
+                    };
+                    clientToStart.Send(JsonConvert.SerializeObject(answer));
+                    dynamic answerToDocter = new
+                    {
+                        id = "Doctor/StartAstrand",
+                        data = new
+                        {
+                            status = "ok"
+                        }
+                    };
+                    Send(JsonConvert.SerializeObject(answerToDocter));
+                    Database.AddActiveSession(patientId);
+                }
+                else
+                {
+                    Send(JsonConvert.SerializeObject(Commands.StartAstrandError("Patient not found")));
+                }
+            }
+            catch (Exception e)
+            {
+                Send(JsonConvert.SerializeObject(Commands.StartAstrandError(e.Message)));
             }
         }
         #endregion

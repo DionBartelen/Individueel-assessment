@@ -58,7 +58,6 @@ namespace WindowsFormsApp1
             {
                 string comPort = comportCombo.SelectedItem.ToString();
                 Client client = new Client(currentClient, null, comPort);
-               
             }
         }
     }

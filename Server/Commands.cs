@@ -103,5 +103,19 @@ namespace Server
             };
             return Error;
         }
+
+        public static dynamic StartAstrandError(string status)
+        {
+            dynamic Error = new
+            {
+                id = "doctor/StartAstrand",
+                data = new
+                {
+                    status = "Error",
+                    error = status
+                }
+            };
+            return Error;
+        }
     }
 }

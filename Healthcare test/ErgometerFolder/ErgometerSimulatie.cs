@@ -32,7 +32,6 @@ namespace Healthcare_test
             {
                 System.Diagnostics.Debug.WriteLine(e.StackTrace);
             }
-            System.Diagnostics.Debug.WriteLine("Kut zooi");
         }
 
         public override void ErgometerCommandMode()
