@@ -146,6 +146,14 @@ namespace Server
                 {
                     NoPermission("session/end");
                 }
+                else if (jsonObject.id == "StopAstrand")
+                {
+                    string patient = (string)jsonObject.data.patientId;
+                    if (CloseSession(patient))
+                    {
+                        Database.Close();
+                    }
+                }
                 else if (jsonObject.id == "doctor/login")
                 {
                     CheckDoctorCredentials((string)jsonObject.data.username, (string)jsonObject.data.password);
@@ -161,7 +169,7 @@ namespace Server
                 else if (jsonObject.id == "doctor/training/start")
                 {
                     string patient = jsonObject.data.patientId;
-                    if (CreateNewSession(patient))
+                    if (CreateNewSession(patient, true))
                     {
                         dynamic response = new
                         {
@@ -246,7 +254,9 @@ namespace Server
                 {
                     if (IsDoctor)
                     {
-                        StartAstrandFromPatient((string)jsonObject.data.client);
+                        string client = (string)jsonObject.data.client;
+                        CreateNewSession(client, false);
+                        StartAstrandFromPatient(client);
                     }
                     else
                     {
@@ -299,7 +309,7 @@ namespace Server
 
         //Create new session.
         #region
-        public Boolean CreateNewSession(string username)
+        public Boolean CreateNewSession(string username, Boolean responseStartSession)
         {
             if (!IsDoctor)
             {
@@ -327,7 +337,10 @@ namespace Server
                                 sessionID = username
                             }
                         };
-                        client.Send(JsonConvert.SerializeObject(answer));
+                        if (responseStartSession)
+                        {
+                            client.Send(JsonConvert.SerializeObject(answer));
+                        }
                         return true;
                     }
                     else
@@ -448,39 +461,31 @@ namespace Server
         #region
         public Boolean CloseSession(string sessionId)
         {
-            if (!IsDoctor)
+            Session client = Program.GetSessionWithUsername(sessionId);
+            if (client == null)
             {
-                NoPermission("doctor/training/stop");
+                Send(JsonConvert.SerializeObject(Commands.DoctorTrianingStopError("No client active with given username.")));
                 return false;
             }
-            else
+            try
             {
-                Session client = Program.GetSessionWithUsername(sessionId);
-                if (client == null)
+                Database.CloseActiveSession(sessionId);
+                dynamic answer = new
                 {
-                    Send(JsonConvert.SerializeObject(Commands.DoctorTrianingStopError("No client active with given username.")));
-                    return false;
-                }
-                try
-                {
-                    Database.CloseActiveSession(sessionId);
-                    dynamic answer = new
+                    id = "session/end",
+                    data = new
                     {
-                        id = "session/end",
-                        data = new
-                        {
-                            status = "OK"
-                        }
-                    };
-                    client.Send(JsonConvert.SerializeObject(answer));
-                    Program.sessions.Remove(client);
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    Send(JsonConvert.SerializeObject(Commands.DoctorTrianingStopError(e.Message)));
-                    return false;
-                }
+                        status = "OK"
+                    }
+                };
+                client.Send(JsonConvert.SerializeObject(answer));
+                Program.sessions.Remove(client);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Send(JsonConvert.SerializeObject(Commands.DoctorTrianingStopError(e.Message)));
+                return false;
             }
         }
         #endregion
@@ -672,7 +677,7 @@ namespace Server
                         id = "StartAstrand",
                         data = new
                         {
-
+                            sessionId = patientId
                         }
                     };
                     clientToStart.Send(JsonConvert.SerializeObject(answer));

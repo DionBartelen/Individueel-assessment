@@ -42,6 +42,7 @@
             this.chatbox.ReadOnly = true;
             this.chatbox.Size = new System.Drawing.Size(855, 353);
             this.chatbox.TabIndex = 0;
+            this.chatbox.Text = "Wacht een ogenblik tot de dokter de Ästrand test start";
             // 
             // confirmButton
             // 

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Ports;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Healthcare_test;
 using System.Net.Security;
@@ -26,11 +23,11 @@ namespace WindowsFormsApp1
         IPAddress localhost;
         SerialPort serialPort;
         Healthcare_test.ErgometerCOM ergometerCOM;
-        string sessionID;
+        public string sessionID;
         Thread read;
         Thread getData;
         public Boolean isConnected;
-        ErgometerSimulatie simulation;
+        public ErgometerSimulatie simulation;
         int measurement = 0;
 
 
@@ -162,6 +159,7 @@ namespace WindowsFormsApp1
             }
             if (jsonData.id == "StartAstrand")
             {
+                sessionID = (string) jsonData.data.sessionId;
                 new Thread(StartAstrand).Start();
             }
         }
@@ -338,7 +336,14 @@ namespace WindowsFormsApp1
 
         public void StartAstrand()
         {
-            astrand.Start();
+            try
+            {
+                astrand.Start();
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("client regel 348: " + e.StackTrace);
+            }
         }
 
         public static bool ValidateCert(object sender, X509Certificate certificate,

@@ -139,6 +139,8 @@ namespace DoctorApplicatie
         private void AstrandButton_Click(object sender, EventArgs e)
         {
             connection.StartAstrand(sessionID);
+            AstrandButton.Enabled = false;
+            startBtn.Enabled = false;
         }
     }
 }
