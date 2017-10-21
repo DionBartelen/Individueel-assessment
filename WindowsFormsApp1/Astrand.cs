@@ -77,20 +77,19 @@ namespace WindowsFormsApp1
 
         public void WarmingUp()
         {
+            client.SetPower(50);
             //Measurements 1200 is 2 minuten warming up
-            int measurements = 1200;
+            int measurements = 120;
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
-                currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
                     SendData(data);
                 }
                 currentMeasurement++;
-                chatPanel.Invalidate();
                 Thread.Sleep(100);
             }
         }
@@ -117,6 +116,9 @@ namespace WindowsFormsApp1
 
         public void CoolingDown()
         {
+            currentRPM = 0;
+            chatPanel.Invalidate();
+            client.SetPower(50);
             //Measurements 600 is 1 minuten voor de cooling down
             int measurements = 60;
             int currentMeasurement = 0;
@@ -124,13 +126,11 @@ namespace WindowsFormsApp1
             {
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
-                currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
                     SendData(data);
                 }
                 currentMeasurement++;
-                chatPanel.Invalidate();
                 Thread.Sleep(100);
             }
         }

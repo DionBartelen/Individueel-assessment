@@ -17,7 +17,7 @@ namespace Server
         {
             try
             {
-                string path = Path.Combine(Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName, @"Healthcare\Server\Database\Database.txt");
+                string path = Path.Combine(Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName, @"Individueel-assessment\Server\Database\Database.txt");
                 string AllText = File.ReadAllText(path);
                 List<string> lines = AllText.Split('&').ToList();
                 Dictionary<string, List<TrainSession>> dictionary = new Dictionary<string, List<TrainSession>>();

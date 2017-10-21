@@ -154,8 +154,7 @@ namespace WindowsFormsApp1
             }
             if (jsonData.id == "client/SetPower")
             {
-                ergometerCOM?.SetPower((int)jsonData.data.power);
-                simulation?.SetPower((int)jsonData.data.power);
+                SetPower((int)jsonData.data.power);
             }
             if (jsonData.id == "StartAstrand")
             {
@@ -332,6 +331,12 @@ namespace WindowsFormsApp1
             {
                 System.Diagnostics.Debug.WriteLine("error: " + e.Message);
             }
+        }
+
+        public void SetPower(int power)
+        {
+            ergometerCOM?.SetPower(power);
+            simulation?.SetPower(power);
         }
 
         public void StartAstrand()
