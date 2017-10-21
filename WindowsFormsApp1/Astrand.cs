@@ -17,6 +17,7 @@ namespace WindowsFormsApp1
         private Boolean canConfirm;
         private Boolean confirmed;
         private Client client;
+        public int currentRPM = 0;
         private List<ErgometerData> measurements;
 
         public Astrand(ChatPanel chatPanel, Client client)
@@ -77,17 +78,19 @@ namespace WindowsFormsApp1
         public void WarmingUp()
         {
             //Measurements 1200 is 2 minuten warming up
-            int measurements = 120;
+            int measurements = 1200;
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
+                currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
                     SendData(data);
                 }
                 currentMeasurement++;
+                chatPanel.Invalidate();
                 Thread.Sleep(100);
             }
         }
@@ -101,11 +104,13 @@ namespace WindowsFormsApp1
             {
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
+                currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
                     SendData(data);
                 }
                 currentMeasurement++;
+                chatPanel.Invalidate();
                 Thread.Sleep(100);
             }
         }
@@ -119,11 +124,13 @@ namespace WindowsFormsApp1
             {
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
+                currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
                     SendData(data);
                 }
                 currentMeasurement++;
+                chatPanel.Invalidate();
                 Thread.Sleep(100);
             }
         }
