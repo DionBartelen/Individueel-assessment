@@ -59,7 +59,7 @@ namespace Healthcare_test.test_applicatie
                     CurrentTime.Timer();
                     TimeLabel.Invoke(new Action(() => TimeLabel.Text = CurrentTime.ToString()));
 
-                    Distance += (Speed / 60);
+                    Distance += (Speed / 3600);
                     DistanceLabel.Invoke(new Action(() => DistanceLabel.Text = $"{Distance:f2}"));
 
                     RPM = Speed * 2.8;

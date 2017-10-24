@@ -131,7 +131,6 @@ namespace Server
                 }
                 else if (jsonObject.id == "data")
                 {
-                    Console.WriteLine("Data recieved");
                     DataRecieved(jsonObject);
                 }
                 else if (jsonObject.id == "start")
@@ -148,10 +147,25 @@ namespace Server
                 }
                 else if (jsonObject.id == "StopAstrand")
                 {
-                    string patient = (string)jsonObject.data.patientId;
-                    if (CloseSession(patient))
+                    if (jsonObject.data.status == "ok")
                     {
-                        Database.Close();
+                        string patient = (string) jsonObject.data.patientId;
+                        int age = (int) jsonObject.data.data.age;
+                        string sex = (string) jsonObject.data.data.sex;
+                        double vo2 = (double) jsonObject.data.data.vo2Max;
+                        double avgPulse = (double) jsonObject.data.data.avgPulse;
+                        if (CloseSession(patient, age, sex, vo2, avgPulse))
+                        {
+                            Database.Close();
+                        }
+                    }
+                    else
+                    {
+                        Session s = Program.GetSessionWithUsername((string) jsonObject.data.patientId);
+                        if (s != null)
+                        {
+                            Program.ErrorWithSession(s);
+                        }
                     }
                 }
                 else if (jsonObject.id == "doctor/login")
@@ -185,7 +199,7 @@ namespace Server
                 else if (jsonObject.id == "doctor/training/stop")
                 {
                     string patient = jsonObject.data.patientId;
-                    if (CloseSession(patient))
+                    if (CloseSession(patient, -1, "Unknown", -1, -1))
                     {
                         dynamic response = new
                         {
@@ -364,7 +378,6 @@ namespace Server
         {
             if (!IsDoctor)
             {
-                Console.WriteLine("No permission");
                 NoPermission("doctor/sessions");
             }
             else
@@ -459,7 +472,7 @@ namespace Server
 
         //Close session
         #region
-        public Boolean CloseSession(string sessionId)
+        public Boolean CloseSession(string sessionId, int age, string sex, double vo2, double avgPulse)
         {
             Session client = Program.GetSessionWithUsername(sessionId);
             if (client == null)
@@ -469,7 +482,8 @@ namespace Server
             }
             try
             {
-                Database.CloseActiveSession(sessionId);
+
+                Database.CloseActiveSession(sessionId, age, sex, vo2, avgPulse);
                 dynamic answer = new
                 {
                     id = "session/end",

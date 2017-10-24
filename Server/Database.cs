@@ -30,12 +30,20 @@ namespace Server
                         List<TrainSession> sessions = new List<TrainSession>();
                         foreach (dynamic training in jsonObject.data.Trainingsession)
                         {
+                            int age = (int) training.age;
+                            string sex = (string) training.sex;
+                            double vo2Max = (double) training.vo2Max;
+                            double avgPulse = (double) training.avgPulse;
                             List<ErgometerData> ergoData = new List<ErgometerData>();
                             foreach (dynamic ergometerData in training.data)
                             {
                                 ergoData.Add(new ErgometerData((int)ergometerData.Pulse, (int)ergometerData.RPM, (double)ergometerData.Speed, (double)ergometerData.Distance, (int)ergometerData.Time, 0, 0, (int)ergometerData.Requested_Power));
                             }
                             TrainSession trainingsession = new TrainSession();
+                            trainingsession.age = age;
+                            trainingsession.sex = sex;
+                            trainingsession.vo2Max = vo2Max;
+                            trainingsession.avgPulse = avgPulse;
                             trainingsession.SetData(ergoData);
                             sessions.Add(trainingsession);
                         }
@@ -70,9 +78,13 @@ namespace Server
             return false;
         }
 
-        public static void CloseActiveSession(string username)
+        public static void CloseActiveSession(string username, int age, string sex, double vo2Max, double avgPulse)
         {
             TrainSession sessionToClose = ActiveTrainSessions[username];
+            sessionToClose.age = age;
+            sessionToClose.sex = sex;
+            sessionToClose.vo2Max = vo2Max;
+            sessionToClose.avgPulse = avgPulse;
             ActiveTrainSessions.Remove(username);
             if (TrainSessions.ContainsKey(username))
             {

@@ -41,7 +41,7 @@ namespace Healthcare_test
         public override ErgometerData GetData()
         {
             // 0-en moeten nog ingevoerd worden!!!
-            return new ErgometerData(s.Pulse, (int)s.RPM, s.Speed, s.Distance,  (s.CurrentTime.Minute * 100) + s.CurrentTime.Second, 0, s.Power, 0);
+            return new ErgometerData(s.Pulse, (int)s.RPM, s.Speed, s.Distance,  (s.CurrentTime.Minute * 60) + s.CurrentTime.Second, 0, s.Power, 0);
         }
 
         public override bool IsConnected()

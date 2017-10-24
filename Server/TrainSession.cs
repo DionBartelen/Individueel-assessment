@@ -9,10 +9,18 @@ namespace Server
     [Serializable]
     class TrainSession
     {
+        public int age { get; set; }
+        public string sex { get; set; }
+        public double vo2Max { get; set; }
+        public double avgPulse { get; set; }
+
         public List<ErgometerData> data;
 
         public TrainSession()
         {
+            age = -1;
+            sex = "Unknown";
+            vo2Max = -1;
             data = new List<ErgometerData>();
         }
 

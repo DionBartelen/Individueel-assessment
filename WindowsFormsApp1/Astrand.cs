@@ -13,15 +13,21 @@ namespace WindowsFormsApp1
 {
     public class Astrand
     {
+        private int age;
+        private string sex;
+
         private ChatPanel chatPanel;
         private Boolean started;
         private Boolean canConfirm;
         private Boolean confirmed;
         private Client client;
         private Boolean SteadyHF;
+        private Boolean ReadyState130;
         private List<int> Pulse;
         public int currentRPM = 0;
         private List<ErgometerData> measurements;
+
+        private readonly int speed = 10;
 
         public Astrand(ChatPanel chatPanel, Client client)
         {
@@ -29,6 +35,7 @@ namespace WindowsFormsApp1
             this.client = client;
             started = false;
             confirmed = false;
+            ReadyState130 = false;
             SteadyHF = true;
             canConfirm = false;
             Pulse = new List<int>();
@@ -37,6 +44,7 @@ namespace WindowsFormsApp1
 
         public void Start()
         {
+            Application.Run(new GebruikerGegevensAstrandForm(this));
             chatPanel.astrand = this;
             started = true;
             chatPanel.UpdateText("De astrand test gaat beginnen. Doe de hartslagband om en neem plaats op de fiets. Zorg ook dat het zadel van de fiets op de juiste hoogte is ingesteld. \r\nDruk op begrepen om door te gaan.");
@@ -82,6 +90,7 @@ namespace WindowsFormsApp1
 
         public void WarmingUp()
         {
+            chatPanel.UpdateText("Power word naar 50 gezet");
             client.SetPower(50);
             //Measurements 1200 is 2 minuten warming up
             int measurements = 1200;
@@ -92,10 +101,15 @@ namespace WindowsFormsApp1
                 this.measurements.Add(data);
                 if (currentMeasurement % 10 == 0)
                 {
+                    chatPanel.UpdatePreviousText("Warming up nog: " + (measurements - currentMeasurement) / 10 + " seconden");
                     SendData(data);
                 }
+                if (HFAboveMaximum(data.Pulse))
+                {
+                    ErrorEndAstrand();
+                }
                 currentMeasurement++;
-                Thread.Sleep(100);
+                Thread.Sleep(speed);
             }
         }
 
@@ -120,15 +134,25 @@ namespace WindowsFormsApp1
                 currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
+                    chatPanel.UpdatePreviousText("Huidige power: " + (data.Actual_Power) + " Huidige RPM: " + data.RPM + " Huidige hartslag: " + data.Pulse + "\r\n\r\n" + "Testphase 1: " + (measurements - currentMeasurement) / 10 + " seconden\r\n");
                     SendData(data);
                     if (data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
                     {
                         client.SetPower(data.Actual_Power + 5);
                     }
                 }
+                if (HFAboveMaximum(data.Pulse))
+                {
+                    ErrorEndAstrand();
+                }
+                if (data.Pulse >= 130 && !ReadyState130)
+                {
+                    ReadyState130 = true;
+                    chatPanel.UpdateText("Ready state bereikt");
+                }
                 currentMeasurement++;
                 chatPanel.Invalidate();
-                Thread.Sleep(100);
+                Thread.Sleep(speed);
             }
         }
 
@@ -144,22 +168,32 @@ namespace WindowsFormsApp1
                 currentRPM = data.RPM;
                 if (currentMeasurement % 10 == 0)
                 {
+                    chatPanel.UpdatePreviousText("Huidige power: " + (data.Actual_Power) + " Huidige RPM: " + data.RPM + " Huidige hartslag: " + data.Pulse + "\r\n\r\n" + "Testphase 2: " + (measurements - currentMeasurement) / 10 + " seconden\r\n");
                     SendData(data);
                     if (data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
                     {
                         client.SetPower(data.Actual_Power + 5);
                     }
                 }
-               if (currentMeasurement >= 1200)
+                if (HFAboveMaximum(data.Pulse))
+                {
+                    ErrorEndAstrand();
+                }
+                if (currentMeasurement >= 1200)
                 {
                     if (currentMeasurement % 150 == 0)
                     {
                         AddPulseForAvg(data.Pulse);
                     }
                 }
+                if (data.Pulse >= 130 && !ReadyState130)
+                {
+                    ReadyState130 = true;
+                    chatPanel.UpdateText("Ready state bereikt");
+                }
                 currentMeasurement++;
                 chatPanel.Invalidate();
-                Thread.Sleep(100);
+                Thread.Sleep(speed);
             }
         }
 
@@ -167,6 +201,7 @@ namespace WindowsFormsApp1
         {
             currentRPM = 0;
             chatPanel.Invalidate();
+            chatPanel.UpdateText("Power word naar 50 gezet");
             client.SetPower(50);
             //Measurements 600 is 1 minuten voor de cooling down
             int measurements = 600;
@@ -177,10 +212,15 @@ namespace WindowsFormsApp1
                 this.measurements.Add(data);
                 if (currentMeasurement % 10 == 0)
                 {
+                    chatPanel.UpdatePreviousText("Cooling down: " + (measurements - currentMeasurement) / 10 + " seconden");
                     SendData(data);
                 }
+                if (HFAboveMaximum(data.Pulse))
+                {
+                    ErrorEndAstrand();
+                }
                 currentMeasurement++;
-                Thread.Sleep(100);
+                Thread.Sleep(speed);
             }
         }
 
@@ -216,6 +256,12 @@ namespace WindowsFormsApp1
             client.Send(JsonConvert.SerializeObject(ergometerdata));
         }
 
+        public Boolean HFAboveMaximum(int pulse)
+        {
+            int maxPulse = 0; //todo Sander
+            return pulse < maxPulse;
+        }
+
         public void StopAstrand(string status)
         {
             dynamic request = new
@@ -227,7 +273,9 @@ namespace WindowsFormsApp1
                     status = status,
                     data = new
                     {
-                        age = 0,
+                        age = age,
+                        sex = sex,
+                        vo2Max = 0, //todo Sander
                         avgPulse = GetAvgPulse()
                     } 
                 }
@@ -242,7 +290,29 @@ namespace WindowsFormsApp1
             {
                 TotalPulse += p;
             }
-            return TotalPulse / Pulse.Count();
+            if (Pulse.Count > 0)
+            {
+                return TotalPulse / Pulse.Count;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public void PrivateData(int age, string sex)
+        {
+            this.age = age;
+            this.sex = sex;
+        }
+
+        public void ErrorEndAstrand()
+        {
+            StopAstrand("Error");
+            Task.Delay(1000).Wait();
+            client.close();
+            chatPanel.End();
+            MessageBox.Show("Er is een error opgetreden.");
         }
     }
 }

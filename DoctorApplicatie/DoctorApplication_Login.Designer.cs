@@ -54,6 +54,7 @@
             this.usernameTxt.Name = "usernameTxt";
             this.usernameTxt.Size = new System.Drawing.Size(220, 22);
             this.usernameTxt.TabIndex = 1;
+            this.usernameTxt.Text = "Dokter van de Steen";
             // 
             // passwordLbl
             // 
@@ -75,6 +76,7 @@
             this.passwordTxt.PasswordChar = '*';
             this.passwordTxt.Size = new System.Drawing.Size(220, 22);
             this.passwordTxt.TabIndex = 3;
+            this.passwordTxt.Text = "Doktervds123";
             // 
             // sign_in_btn
             // 

@@ -46,7 +46,7 @@
             this.usernameTxt.Name = "usernameTxt";
             this.usernameTxt.Size = new System.Drawing.Size(275, 22);
             this.usernameTxt.TabIndex = 0;
-            this.usernameTxt.Text = "test1";
+            this.usernameTxt.Text = "Jan Jansen";
             // 
             // passwordTxt
             // 
@@ -56,7 +56,7 @@
             this.passwordTxt.PasswordChar = '*';
             this.passwordTxt.Size = new System.Drawing.Size(275, 22);
             this.passwordTxt.TabIndex = 1;
-            this.passwordTxt.Text = "test2";
+            this.passwordTxt.Text = "JJ";
             // 
             // usernameLbl
             // 

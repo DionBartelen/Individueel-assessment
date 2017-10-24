@@ -75,6 +75,11 @@ namespace Server
             return null;
         }
 
+        public static void ErrorWithSession(Session session)
+        {
+            sessions.Remove(session);
+        }
+
 
 
         [DllImport("Kernel32")]

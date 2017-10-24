@@ -8,6 +8,7 @@ namespace WindowsFormsApp1
     {
         private int screenWidth;
         private int screenHeight;
+        private string previousText;
         public Astrand astrand { get; set; }
 
         public ChatPanel()
@@ -31,16 +32,20 @@ namespace WindowsFormsApp1
 
         public void UpdateText(string newText)
         {
-            string totalText = newText + "\r\n\r\n" + chatbox.Text;
+            string totalText = newText + "\r\n\r\n" + previousText;
+            previousText = totalText;
+            chatbox.Invoke(new Action(() => { chatbox.Text = totalText; }));
+        }
+
+        public void UpdatePreviousText(string newText)
+        {
+            string totalText = newText + "\r\n\r\n" + previousText;
             chatbox.Invoke(new Action(() => { chatbox.Text = totalText; }));
         }
 
         private void confirmButton_Click(object sender, EventArgs e)
         {
-            if (astrand != null)
-            {
-                astrand.Confirm();
-            }
+            astrand?.Confirm();
         }
 
         public void End()
@@ -69,11 +74,11 @@ namespace WindowsFormsApp1
             else if (astrand.currentRPM <= 50)
             {
                 p = new Pen(Color.Red, 7);
-                text = "Fiets sneller";
+                text = "Fiets sneller (Meer dan 50 RPM)";
             } else if (astrand.currentRPM >= 60)
             {
                 p = new Pen(Color.Red, 7);
-                text = "Fiets langzamer";
+                text = "Fiets langzamer (Minder dan 60 RPM)";
             }
             else
             {
