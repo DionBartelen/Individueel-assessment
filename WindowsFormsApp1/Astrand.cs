@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using Healthcare_test;
 using Newtonsoft.Json;
@@ -17,6 +18,8 @@ namespace WindowsFormsApp1
         private Boolean canConfirm;
         private Boolean confirmed;
         private Client client;
+        private Boolean SteadyHF;
+        private List<int> Pulse;
         public int currentRPM = 0;
         private List<ErgometerData> measurements;
 
@@ -26,7 +29,9 @@ namespace WindowsFormsApp1
             this.client = client;
             started = false;
             confirmed = false;
+            SteadyHF = true;
             canConfirm = false;
+            Pulse = new List<int>();
             measurements = new List<ErgometerData>();
         }
 
@@ -79,7 +84,7 @@ namespace WindowsFormsApp1
         {
             client.SetPower(50);
             //Measurements 1200 is 2 minuten warming up
-            int measurements = 120;
+            int measurements = 1200;
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
@@ -96,8 +101,17 @@ namespace WindowsFormsApp1
 
         public void RealTest()
         {
-            //Measurements 2400 is 4 minuten voor de test
-            int measurements = 240;
+            RealTestPhase1();
+            do
+            {
+                RealTestPhase2();
+            } while (GetAvgPulse() < 130);
+        }
+
+        public void RealTestPhase1()
+        {
+            //Measurements 1200 is 2 minuten voor de test
+            int measurements = 1200;
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
@@ -107,6 +121,41 @@ namespace WindowsFormsApp1
                 if (currentMeasurement % 10 == 0)
                 {
                     SendData(data);
+                    if (data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
+                    {
+                        client.SetPower(data.Actual_Power + 5);
+                    }
+                }
+                currentMeasurement++;
+                chatPanel.Invalidate();
+                Thread.Sleep(100);
+            }
+        }
+
+        public void RealTestPhase2()
+        {
+            //Measurements 1200 is 2 minuten voor de test
+            int measurements = 1200;
+            int currentMeasurement = 0;
+            while (currentMeasurement <= measurements)
+            {
+                ErgometerData data = client.GetErgoData();
+                this.measurements.Add(data);
+                currentRPM = data.RPM;
+                if (currentMeasurement % 10 == 0)
+                {
+                    SendData(data);
+                    if (data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
+                    {
+                        client.SetPower(data.Actual_Power + 5);
+                    }
+                }
+               if (currentMeasurement >= 1200)
+                {
+                    if (currentMeasurement % 150 == 0)
+                    {
+                        AddPulseForAvg(data.Pulse);
+                    }
                 }
                 currentMeasurement++;
                 chatPanel.Invalidate();
@@ -120,7 +169,7 @@ namespace WindowsFormsApp1
             chatPanel.Invalidate();
             client.SetPower(50);
             //Measurements 600 is 1 minuten voor de cooling down
-            int measurements = 60;
+            int measurements = 600;
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
@@ -133,6 +182,19 @@ namespace WindowsFormsApp1
                 currentMeasurement++;
                 Thread.Sleep(100);
             }
+        }
+
+        public void AddPulseForAvg(int pulse)
+        {
+            if (Pulse.Any())
+            {
+                if (Math.Abs(Pulse[Pulse.Count - 1] - pulse) > 5)
+                {
+                    SteadyHF = false;
+                    System.Diagnostics.Debug.WriteLine("error bij steadyHF: " + Pulse[Pulse.Count - 1] + "   " + pulse);
+                }
+            }
+            Pulse.Add(pulse);
         }
 
         public void SendData(ErgometerData data)
@@ -161,10 +223,21 @@ namespace WindowsFormsApp1
                 id = "StopAstrand",
                 data = new
                 {
-                    patientId = client.sessionID
+                    patientId = client.sessionID,
+                    avgPulse = GetAvgPulse()
                 }
             };
             client.Send(JsonConvert.SerializeObject(request));
+        }
+
+        public int GetAvgPulse()
+        {
+            int TotalPulse = 0;
+            foreach (int p in Pulse)
+            {
+                TotalPulse += p;
+            }
+            return TotalPulse / Pulse.Count();
         }
     }
 }
