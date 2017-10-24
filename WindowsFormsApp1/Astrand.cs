@@ -55,7 +55,7 @@ namespace WindowsFormsApp1
             chatPanel.UpdateText("De test is voorbij, je begin nu aan de cooling down");
             CoolingDown();
             chatPanel.UpdateText("De test is klaar. U kunt nu van de fiets afstappen");
-            StopAstrand();
+            StopAstrand("ok");
             WachtOpConfirm();
             client.close();
             chatPanel.End();
@@ -216,7 +216,7 @@ namespace WindowsFormsApp1
             client.Send(JsonConvert.SerializeObject(ergometerdata));
         }
 
-        public void StopAstrand()
+        public void StopAstrand(string status)
         {
             dynamic request = new
             {
@@ -224,7 +224,12 @@ namespace WindowsFormsApp1
                 data = new
                 {
                     patientId = client.sessionID,
-                    avgPulse = GetAvgPulse()
+                    status = status,
+                    data = new
+                    {
+                        age = 0,
+                        avgPulse = GetAvgPulse()
+                    } 
                 }
             };
             client.Send(JsonConvert.SerializeObject(request));
