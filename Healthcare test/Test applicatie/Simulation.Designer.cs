@@ -129,6 +129,7 @@
             // 
             // ResetButton
             // 
+            this.ResetButton.Enabled = false;
             this.ResetButton.ForeColor = System.Drawing.Color.Crimson;
             this.ResetButton.Location = new System.Drawing.Point(209, 394);
             this.ResetButton.Name = "ResetButton";
@@ -203,6 +204,7 @@
             // 
             // PauseButton
             // 
+            this.PauseButton.Enabled = false;
             this.PauseButton.ForeColor = System.Drawing.Color.ForestGreen;
             this.PauseButton.Location = new System.Drawing.Point(43, 394);
             this.PauseButton.Name = "PauseButton";
@@ -214,6 +216,7 @@
             // 
             // StartButton
             // 
+            this.StartButton.Enabled = false;
             this.StartButton.Location = new System.Drawing.Point(41, 428);
             this.StartButton.Name = "StartButton";
             this.StartButton.Size = new System.Drawing.Size(122, 28);

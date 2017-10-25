@@ -85,23 +85,23 @@ namespace Healthcare_test.test_applicatie
 
         public void Reset()
         {
-            CurrentTime = new Time(0, 0, 0);
-            Distance = 0;
-            Speed = 0;
-            Power = PowerTrackbar.Minimum;
-            Pulse = 0;
-            RPM = 0;
-            Actual_Energy = 0;
-            Requested_Energy = 0;
-            SpeedTrackbar.Value = SpeedTrackbar.Minimum;
-            PowerTrackbar.Value = PowerTrackbar.Minimum;
-            SpeedLabel.Text = 0 + "";
-            PowerLabel.Text = PowerTrackbar.Minimum + "";
+//            CurrentTime = new Time(0, 0, 0);
+//            Distance = 0;
+//            Speed = 0;
+//            Power = PowerTrackbar.Minimum;
+//            Pulse = 0;
+//            RPM = 0;
+//            Actual_Energy = 0;
+//            Requested_Energy = 0;
+//            SpeedTrackbar.Value = SpeedTrackbar.Minimum;
+//            PowerTrackbar.Value = PowerTrackbar.Minimum;
+//            SpeedLabel.Text = 0 + "";
+//            PowerLabel.Text = PowerTrackbar.Minimum + "";
         }
 
         public void ResetButton_Click(object sender, EventArgs e)
         {
-            Reset();
+            //Reset();
         }
 
         private void PauseButton_Click(object sender, EventArgs e)

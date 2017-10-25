@@ -24,8 +24,15 @@ namespace WindowsFormsApp1
         {
             if (Int32.TryParse(AgeTextBox.Text, out int age))
             {
-                astrand.PrivateData(age, SexComboBox.Text);
-                this.Close();
+                if (Double.TryParse(WeightBox.Text, out double weight))
+                {
+                    astrand.PrivateData(age, SexComboBox.Text, weight);
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Not a valid number in Weight field");
+                }
             }
             else
             {

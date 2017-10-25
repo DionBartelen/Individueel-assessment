@@ -152,9 +152,10 @@ namespace Server
                         string patient = (string) jsonObject.data.patientId;
                         int age = (int) jsonObject.data.data.age;
                         string sex = (string) jsonObject.data.data.sex;
+                        double weight = (double) jsonObject.data.data.weight;
                         double vo2 = (double) jsonObject.data.data.vo2Max;
                         double avgPulse = (double) jsonObject.data.data.avgPulse;
-                        if (CloseSession(patient, age, sex, vo2, avgPulse))
+                        if (CloseSession(patient, age, sex, vo2, avgPulse, weight))
                         {
                             Database.Close();
                         }
@@ -199,7 +200,7 @@ namespace Server
                 else if (jsonObject.id == "doctor/training/stop")
                 {
                     string patient = jsonObject.data.patientId;
-                    if (CloseSession(patient, -1, "Unknown", -1, -1))
+                    if (CloseSession(patient, -1, "Unknown", -1, -1, -1))
                     {
                         dynamic response = new
                         {
@@ -472,7 +473,7 @@ namespace Server
 
         //Close session
         #region
-        public Boolean CloseSession(string sessionId, int age, string sex, double vo2, double avgPulse)
+        public Boolean CloseSession(string sessionId, int age, string sex, double vo2, double avgPulse, double weight)
         {
             Session client = Program.GetSessionWithUsername(sessionId);
             if (client == null)
@@ -483,7 +484,7 @@ namespace Server
             try
             {
 
-                Database.CloseActiveSession(sessionId, age, sex, vo2, avgPulse);
+                Database.CloseActiveSession(sessionId, age, sex, vo2, avgPulse, weight);
                 dynamic answer = new
                 {
                     id = "session/end",

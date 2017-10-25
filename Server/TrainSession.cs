@@ -13,6 +13,7 @@ namespace Server
         public string sex { get; set; }
         public double vo2Max { get; set; }
         public double avgPulse { get; set; }
+        public double weight { get; set; }
 
         public List<ErgometerData> data;
 

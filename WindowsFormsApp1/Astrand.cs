@@ -15,6 +15,7 @@ namespace WindowsFormsApp1
     {
         private int age;
         private string sex;
+        private double weight;
 
         private ChatPanel chatPanel;
         private Boolean started;
@@ -44,6 +45,9 @@ namespace WindowsFormsApp1
 
         public void Start()
         {
+            client.RestetErgo();
+            Thread.Sleep(1000);
+            client.CommandMode();
             Application.Run(new GebruikerGegevensAstrandForm(this));
             chatPanel.astrand = this;
             started = true;
@@ -275,6 +279,7 @@ namespace WindowsFormsApp1
                     {
                         age = age,
                         sex = sex,
+                        weight = weight,
                         vo2Max = 0, //todo Sander
                         avgPulse = GetAvgPulse()
                     } 
@@ -300,10 +305,11 @@ namespace WindowsFormsApp1
             }
         }
 
-        public void PrivateData(int age, string sex)
+        public void PrivateData(int age, string sex, double weight)
         {
             this.age = age;
             this.sex = sex;
+            this.weight = weight;
         }
 
         public void ErrorEndAstrand()

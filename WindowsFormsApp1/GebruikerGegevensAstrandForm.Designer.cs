@@ -33,6 +33,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.AgeTextBox = new System.Windows.Forms.TextBox();
             this.OkButton = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.WeightBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // SexComboBox
@@ -49,7 +51,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 54);
+            this.label1.Location = new System.Drawing.Point(27, 54);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 17);
             this.label1.TabIndex = 1;
@@ -73,7 +75,7 @@
             // 
             // OkButton
             // 
-            this.OkButton.Location = new System.Drawing.Point(27, 143);
+            this.OkButton.Location = new System.Drawing.Point(27, 171);
             this.OkButton.Name = "OkButton";
             this.OkButton.Size = new System.Drawing.Size(196, 23);
             this.OkButton.TabIndex = 4;
@@ -81,11 +83,29 @@
             this.OkButton.UseVisualStyleBackColor = true;
             this.OkButton.Click += new System.EventHandler(this.OkButton_Click);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(27, 129);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(52, 17);
+            this.label3.TabIndex = 5;
+            this.label3.Text = "Weight";
+            // 
+            // WeightBox
+            // 
+            this.WeightBox.Location = new System.Drawing.Point(102, 126);
+            this.WeightBox.Name = "WeightBox";
+            this.WeightBox.Size = new System.Drawing.Size(121, 22);
+            this.WeightBox.TabIndex = 6;
+            // 
             // GebruikerGegevensAstrandForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(370, 290);
+            this.Controls.Add(this.WeightBox);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.OkButton);
             this.Controls.Add(this.AgeTextBox);
             this.Controls.Add(this.label2);
@@ -105,5 +125,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox AgeTextBox;
         private System.Windows.Forms.Button OkButton;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox WeightBox;
     }
 }

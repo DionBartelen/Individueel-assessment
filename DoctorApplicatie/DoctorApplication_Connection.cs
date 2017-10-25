@@ -362,11 +362,13 @@ namespace DoctorApplicatie
                 string sex = (string) tSession.sex;
                 double vo2Max = (double) tSession.vo2Max;
                 double avgPulse = (double) tSession.avgPulse;
+                double weight = (double) tSession.weight;
                 TrainSession trainsession = new TrainSession();
                 trainsession.age = age;
                 trainsession.sex = sex;
                 trainsession.vo2Max = vo2Max;
                 trainsession.avgPulse = avgPulse;
+                trainsession.weight = weight;
                 foreach (dynamic EData in tSession.data)
                 {
                     trainsession.AddData(new ErgometerData((int)EData.Pulse, (int)EData.RPM, (double)EData.Speed, (double)EData.Distance, (int)EData.Time, (int)EData.Energy, (int)EData.Actual_Power, (int)EData.Requested_Power));

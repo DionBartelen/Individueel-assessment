@@ -339,6 +339,18 @@ namespace WindowsFormsApp1
             simulation?.SetPower(power);
         }
 
+        public void RestetErgo()
+        {
+            ergometerCOM?.Reset();
+            simulation?.Reset();
+        }
+
+        public void CommandMode()
+        {
+            ergometerCOM?.ErgometerCommandMode();
+            simulation?.ErgometerCommandMode();
+        }
+
         public void StartAstrand()
         {
             try

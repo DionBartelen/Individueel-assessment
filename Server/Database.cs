@@ -34,6 +34,7 @@ namespace Server
                             string sex = (string) training.sex;
                             double vo2Max = (double) training.vo2Max;
                             double avgPulse = (double) training.avgPulse;
+                            double weight = (double) training.weight;
                             List<ErgometerData> ergoData = new List<ErgometerData>();
                             foreach (dynamic ergometerData in training.data)
                             {
@@ -44,6 +45,7 @@ namespace Server
                             trainingsession.sex = sex;
                             trainingsession.vo2Max = vo2Max;
                             trainingsession.avgPulse = avgPulse;
+                            trainingsession.weight = weight;
                             trainingsession.SetData(ergoData);
                             sessions.Add(trainingsession);
                         }
@@ -78,13 +80,14 @@ namespace Server
             return false;
         }
 
-        public static void CloseActiveSession(string username, int age, string sex, double vo2Max, double avgPulse)
+        public static void CloseActiveSession(string username, int age, string sex, double vo2Max, double avgPulse, double weight)
         {
             TrainSession sessionToClose = ActiveTrainSessions[username];
             sessionToClose.age = age;
             sessionToClose.sex = sex;
             sessionToClose.vo2Max = vo2Max;
             sessionToClose.avgPulse = avgPulse;
+            sessionToClose.weight = weight;
             ActiveTrainSessions.Remove(username);
             if (TrainSessions.ContainsKey(username))
             {
