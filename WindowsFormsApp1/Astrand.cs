@@ -16,6 +16,7 @@ namespace WindowsFormsApp1
         private int age;
         private string sex;
         private double weight;
+        
 
         private ChatPanel chatPanel;
         private Boolean started;
@@ -27,6 +28,7 @@ namespace WindowsFormsApp1
         private List<int> Pulse;
         public int currentRPM = 0;
         private List<ErgometerData> measurements;
+        private double measureFactor;
 
         private readonly int speed = 10;
 
@@ -262,8 +264,50 @@ namespace WindowsFormsApp1
 
         public Boolean HFAboveMaximum(int pulse)
         {
-            int maxPulse = 0; //todo Sander
-            return pulse < maxPulse;
+            if(age < 15)
+            {
+                return false;
+            }
+            int maxPulse = 0;
+            if (age >= 15 && age < 25)
+            {
+                maxPulse = 200;
+            }
+            if (age >= 25 && age < 35)
+            {
+                maxPulse = 200;
+                measureFactor = 1.00;
+            }
+            else if (age >= 35 && age < 40)
+            {
+                maxPulse = 190;
+                measureFactor = 0.93;
+            }
+            else if (age >= 40 && age < 45)
+            {
+                maxPulse = 180;
+                measureFactor = 0.83;
+            }
+            else if (age >= 45 && age < 50)
+            {
+                maxPulse = 170;
+                measureFactor = 0.78;
+            }
+            else if (age >= 50 && age < 55)
+            {
+                maxPulse = 160;
+                measureFactor = 0.75;
+            }
+            else if (age >= 55 && age < 60)
+            {
+                maxPulse = 150;
+                measureFactor = 0.71;
+            }
+            else
+            {
+                measureFactor = 0.65;
+            }
+            return pulse > maxPulse;
         }
 
         public void StopAstrand(string status)
@@ -280,7 +324,7 @@ namespace WindowsFormsApp1
                         age = age,
                         sex = sex,
                         weight = weight,
-                        vo2Max = 0, //todo Sander
+                        vo2Max = CalculateVO2(), //todo Sander
                         avgPulse = GetAvgPulse()
                     } 
                 }
@@ -310,6 +354,33 @@ namespace WindowsFormsApp1
             this.age = age;
             this.sex = sex;
             this.weight = weight;
+        }
+
+        public double CalculateVO2()
+        {
+            double maxWatage = 0;
+            double VO2max = 0;
+            measurements.ForEach(measurement =>
+            {
+                if (measurement.Actual_Power > maxWatage)
+                    maxWatage = measurement.Actual_Power;
+            }
+            );
+            maxWatage *= 6.11;
+            if (sex == "male")
+            {
+                VO2max = (((0.00193 * maxWatage) + 0.326) / (0.769 * GetAvgPulse() - 56.1) * 100) * 1000 / weight;
+            }
+            else
+            {
+                //standard formula    
+                VO2max = (((0.00212 * maxWatage) + 0.299) / (0.769 * GetAvgPulse() - 48.5) * 100) * 1000 / weight;
+            }
+
+            if (age >= 30)
+                VO2max *= measureFactor;
+            return VO2max;
+                
         }
 
         public void ErrorEndAstrand()

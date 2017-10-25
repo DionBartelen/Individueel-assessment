@@ -65,7 +65,7 @@ namespace Healthcare_test.test_applicatie
                     RPM = Speed * 2.8;
                     RpmLabel.Invoke(new Action(() => RpmLabel.Text = RPM.ToString()));
 
-                    Pulse = 90 + (int)((Power/6) * (Speed/20));
+                    Pulse = 90 + (int)((Power/6) * (Speed/10));
                     PulseLabel.Invoke(new Action(() => PulseLabel.Text = Pulse.ToString()));
 
                     

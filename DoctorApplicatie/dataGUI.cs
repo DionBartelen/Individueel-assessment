@@ -48,6 +48,8 @@ namespace DoctorApplicatie
                 Chart.Series[3].Points.AddXY(data.Time, data.Requested_Power);
                 Chart2.Series[0].Points.AddXY(data.Time, data.Pulse);
             }
+            gemiddeldeHFInputLbl.Text = session.avgPulse + "";
+            VO2MaxInputLbl.Text = session.vo2Max + "";
         }
     }
 }
