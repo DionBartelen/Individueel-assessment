@@ -22,7 +22,7 @@ namespace DoctorApplicatie
         public void SetTrainSession(TrainSession session)
         {
             this.session = session;
-            System.Diagnostics.Debug.WriteLine(session.weight);
+            //System.Diagnostics.Debug.WriteLine(session.weight);
             SetChartData();
         }
 

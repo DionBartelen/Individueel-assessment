@@ -324,7 +324,7 @@ namespace WindowsFormsApp1
                         age = age,
                         sex = sex,
                         weight = weight,
-                        vo2Max = CalculateVO2(), //todo Sander
+                        vo2Max = CalculateVO2(),
                         avgPulse = GetAvgPulse()
                     } 
                 }
@@ -367,7 +367,7 @@ namespace WindowsFormsApp1
             }
             );
             maxWatage *= 6.11;
-            if (sex == "male")
+            if (sex != "male")
             {
                 VO2max = (((0.00193 * maxWatage) + 0.326) / (0.769 * GetAvgPulse() - 56.1) * 100) * 1000 / weight;
             }
