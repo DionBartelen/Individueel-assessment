@@ -87,8 +87,6 @@ namespace DoctorApplicatie
 
         public void updateChart()
         {
-
-          
             this.BeginInvoke(new MethodInvoker(delegate
             {
                 chart1.Series.Clear();
@@ -104,7 +102,7 @@ namespace DoctorApplicatie
                 chart2.Series.Add(@"heart pulse");
                 chart2.Series[1].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
                 Distancelbl.Text = Math.Round(currentData.Last().Distance/3600, 3) + "";
-                foreach (ErgometerData data in currentData)
+                foreach (ErgometerData data in currentData.ToList())
                 {
                     chart1.Series[0].Points.AddXY(data.Time, data.Speed);
                     chart1.Series[1].Points.AddXY(data.Time, data.RPM);
@@ -113,7 +111,6 @@ namespace DoctorApplicatie
                     chart2.Series[1].Points.AddXY(data.Time, data.Pulse);
                 }
             }));
-            
         }
 
         private void InformationBtn_Click(object sender, EventArgs e)

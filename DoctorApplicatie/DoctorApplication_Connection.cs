@@ -173,6 +173,17 @@ namespace DoctorApplicatie
                 {
                     new Thread(() => { MessageBox.Show("Ästrand test gestart"); }).Start();
                 }
+            } else if (jsonData.id == "StopAstrand")
+            {
+                if (jsonData.data.status == "error")
+                {
+                    string patientid = (string) jsonData.data.patientId;
+                    string error = (string) jsonData.data.data.status;
+                    new Thread(() =>
+                    {
+                        MessageBox.Show("Error in de gevolgde astrand test van patient " + patientid + "\r\nOpgetrede fout: " + error);
+                    }).Start();
+                }
             }
         }
         #endregion

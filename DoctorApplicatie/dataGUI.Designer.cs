@@ -138,6 +138,7 @@
             this.Controls.Add(this.Chart);
             this.Name = "dataGUI";
             this.Text = "dataGUI";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             ((System.ComponentModel.ISupportInitialize)(this.Chart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Chart2)).EndInit();
             this.ResumeLayout(false);

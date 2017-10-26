@@ -16,7 +16,7 @@ namespace WindowsFormsApp1
         private int age;
         private string sex;
         private double weight;
-        
+
 
         private ChatPanel chatPanel;
         private Boolean started;
@@ -47,7 +47,7 @@ namespace WindowsFormsApp1
 
         public void Start()
         {
-            client.RestetErgo();
+            client.ResetErgo();
             Thread.Sleep(1000);
             client.CommandMode();
             Application.Run(new GebruikerGegevensAstrandForm(this));
@@ -69,7 +69,7 @@ namespace WindowsFormsApp1
             chatPanel.UpdateText("De test is voorbij, je begin nu aan de cooling down");
             CoolingDown();
             chatPanel.UpdateText("De test is klaar. U kunt nu van de fiets afstappen");
-            StopAstrand("ok");
+            StopAstrandSucces();
             WachtOpConfirm();
             client.close();
             chatPanel.End();
@@ -112,7 +112,7 @@ namespace WindowsFormsApp1
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand();
+                    ErrorEndAstrand("Maximum pulse reached!");
                 }
                 currentMeasurement++;
                 Thread.Sleep(speed);
@@ -122,10 +122,12 @@ namespace WindowsFormsApp1
         public void RealTest()
         {
             RealTestPhase1();
-            do
+            RealTestPhase2();
+            if (GetAvgPulse() < 130)
             {
+                chatPanel.UpdateText("De test is niet goed afgesloten, phase 2 word opnieuw uitgevoerd");
                 RealTestPhase2();
-            } while (GetAvgPulse() < 130);
+            }
         }
 
         public void RealTestPhase1()
@@ -149,7 +151,7 @@ namespace WindowsFormsApp1
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand();
+                    ErrorEndAstrand("Maximum pulse reached!");
                 }
                 if (data.Pulse >= 130 && !ReadyState130)
                 {
@@ -183,7 +185,7 @@ namespace WindowsFormsApp1
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand();
+                    ErrorEndAstrand("Maximum pulse reached!");
                 }
                 if (currentMeasurement >= 1200)
                 {
@@ -223,7 +225,7 @@ namespace WindowsFormsApp1
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand();
+                    ErrorEndAstrand("Maximum pulse reached!");
                 }
                 currentMeasurement++;
                 Thread.Sleep(speed);
@@ -264,7 +266,7 @@ namespace WindowsFormsApp1
 
         public Boolean HFAboveMaximum(int pulse)
         {
-            if(age < 15)
+            if (age < 15)
             {
                 return false;
             }
@@ -310,7 +312,7 @@ namespace WindowsFormsApp1
             return pulse > maxPulse;
         }
 
-        public void StopAstrand(string status)
+        public void StopAstrandSucces()
         {
             dynamic request = new
             {
@@ -318,7 +320,7 @@ namespace WindowsFormsApp1
                 data = new
                 {
                     patientId = client.sessionID,
-                    status = status,
+                    status = "ok",
                     data = new
                     {
                         age = age,
@@ -326,7 +328,25 @@ namespace WindowsFormsApp1
                         weight = weight,
                         vo2Max = CalculateVO2(),
                         avgPulse = GetAvgPulse()
-                    } 
+                    }
+                }
+            };
+            client.Send(JsonConvert.SerializeObject(request));
+        }
+
+        public void StopAstrandError(string status)
+        {
+            dynamic request = new
+            {
+                id = "StopAstrand",
+                data = new
+                {
+                    patientId = client.sessionID,
+                    status = "error",
+                    data = new
+                    {
+                        status = status
+                    }
                 }
             };
             client.Send(JsonConvert.SerializeObject(request));
@@ -343,10 +363,7 @@ namespace WindowsFormsApp1
             {
                 return TotalPulse / Pulse.Count;
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         public void PrivateData(int age, string sex, double weight)
@@ -372,24 +389,23 @@ namespace WindowsFormsApp1
                 VO2max = (((0.00193 * maxWatage) + 0.326) / (0.769 * GetAvgPulse() - 56.1) * 100) * 1000 / weight;
             }
             else
-            {
-                //standard formula    
+            {    
                 VO2max = (((0.00212 * maxWatage) + 0.299) / (0.769 * GetAvgPulse() - 48.5) * 100) * 1000 / weight;
             }
 
             if (age >= 30)
                 VO2max *= measureFactor;
             return VO2max;
-                
+
         }
 
-        public void ErrorEndAstrand()
+        public void ErrorEndAstrand(string error)
         {
-            StopAstrand("Error");
+            StopAstrandError(error);
             Task.Delay(1000).Wait();
             client.close();
             chatPanel.End();
-            MessageBox.Show("Er is een error opgetreden.");
+            MessageBox.Show("Er is een error opgetreden:\r\n" + error);
         }
     }
 }

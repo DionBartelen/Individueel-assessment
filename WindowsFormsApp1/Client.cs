@@ -339,7 +339,7 @@ namespace WindowsFormsApp1
             simulation?.SetPower(power);
         }
 
-        public void RestetErgo()
+        public void ResetErgo()
         {
             ergometerCOM?.Reset();
             simulation?.Reset();

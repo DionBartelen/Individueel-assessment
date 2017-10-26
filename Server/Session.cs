@@ -159,6 +159,17 @@ namespace Server
                         {
                             Database.Close();
                         }
+                    } else if (jsonObject.data.status == "error")
+                    {
+                        foreach (Session doctor in DoctorsToSendDataTo)
+                        {
+                            doctor.Send(JsonConvert.SerializeObject(jsonObject));
+                        }
+                        Session s = Program.GetSessionWithUsername((string)jsonObject.data.patientId);
+                        if (s != null)
+                        {
+                            Program.ErrorWithSession(s);
+                        }
                     }
                     else
                     {
