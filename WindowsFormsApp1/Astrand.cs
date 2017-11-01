@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 using Healthcare_test;
+using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 
 namespace WindowsFormsApp1
@@ -17,18 +17,18 @@ namespace WindowsFormsApp1
         private string sex;
         private double weight;
 
+        private Boolean MaxHFReached;
+        private Boolean SteadyHF;
+        private Boolean ReadyState130;
+        private List<int> Pulse;
+        public int currentRPM = 0;
+        private List<ErgometerData> measurements;
 
         private ChatPanel chatPanel;
         private Boolean started;
         private Boolean canConfirm;
         private Boolean confirmed;
         private Client client;
-        private Boolean SteadyHF;
-        private Boolean ReadyState130;
-        private List<int> Pulse;
-        public int currentRPM = 0;
-        private List<ErgometerData> measurements;
-        private double measureFactor;
 
         private readonly int speed = 10;
 
@@ -40,6 +40,7 @@ namespace WindowsFormsApp1
             confirmed = false;
             ReadyState130 = false;
             SteadyHF = true;
+            MaxHFReached = false;
             canConfirm = false;
             Pulse = new List<int>();
             measurements = new List<ErgometerData>();
@@ -47,36 +48,64 @@ namespace WindowsFormsApp1
 
         public void Start()
         {
-            client.ResetErgo();
-            Thread.Sleep(1000);
-            client.CommandMode();
-            Application.Run(new GebruikerGegevensAstrandForm(this));
-            chatPanel.astrand = this;
-            started = true;
-            chatPanel.UpdateText("De astrand test gaat beginnen. Doe de hartslagband om en neem plaats op de fiets. Zorg ook dat het zadel van de fiets op de juiste hoogte is ingesteld. \r\nDruk op begrepen om door te gaan.");
-            WachtOpConfirm();
-            chatPanel.UpdateText("U gaat fietsen met een snelheid van ongeveer 60 omwentelingen per minuut. U krijgt eerst een korte warming-up van 2 minuten. De test duurt 4 minuten met daarna een cooling down van 1 miuut. \r\nDruk op begrepen om door te gaan.");
-            WachtOpConfirm();
-            chatPanel.UpdateText("De test begint wanneer u start met fietsen");
-            while (Math.Abs(client.GetErgoData().Speed) < 1)
+            try
             {
-                Thread.Sleep(10);
+                client.ResetErgo();
+                Thread.Sleep(1000);
+                client.CommandMode();
+                Application.Run(new GebruikerGegevensAstrandForm(this));
+                chatPanel.astrand = this;
+                started = true;
+                chatPanel.UpdateText(
+                    "De astrand test gaat beginnen. Doe de hartslagband om en neem plaats op de fiets. Zorg ook dat het zadel van de fiets op de juiste hoogte is ingesteld. \r\nDruk op begrepen om door te gaan.");
+                WachtOpConfirm();
+                chatPanel.UpdateText(
+                    "U gaat fietsen met een snelheid van ongeveer 60 omwentelingen per minuut. U krijgt eerst een korte warming-up van 2 minuten. De test duurt 4 minuten met daarna een cooling down van 1 miuut. \r\nDruk op begrepen om door te gaan.");
+                WachtOpConfirm();
+                chatPanel.UpdateText("De test begint wanneer u start met fietsen");
+                while (Math.Abs(client.GetErgoData().Speed) < 1)
+                {
+                    Thread.Sleep(10);
+                }
+                client.simulation?.s.startSession();
+                WarmingUp();
+                chatPanel.UpdateText("De warming up is nu klaar, de echte test gaat nu beginnen probeer tussen de 50 en 60 rpm te fietsen");
+                RealTest();
+                chatPanel.UpdateText("De test is voorbij, je begin nu aan de cooling down");
+                CoolingDown();
+                chatPanel.UpdateText("De test is klaar. U kunt nu van de fiets afstappen");
+                if (SteadyHF)
+                {
+                    if (ReadyState130)
+                    {
+                        StopAstrandSucces();
+                    }
+                    else
+                    {
+                        ErrorEndAstrand("Een hartslag van 130 is niet behaald. De test is dus niet geldig en zal niet worden opgeslagen.");
+                    }
+                }
+                else
+                {
+                    ErrorEndAstrand("Uw hartslag is niet geleidelijk verhoorgd. De test is dus niet geldig en zal niet worden opgeslagen.");
+                }
+                WachtOpConfirm();
+                client.close();
+                chatPanel.End();
             }
-            client.simulation?.s.startSession();
-            WarmingUp();
-            chatPanel.UpdateText("De warming up is nu klaar, de echte test gaat nu beginnen");
-            RealTest();
-            chatPanel.UpdateText("De test is voorbij, je begin nu aan de cooling down");
-            CoolingDown();
-            chatPanel.UpdateText("De test is klaar. U kunt nu van de fiets afstappen");
-            StopAstrandSucces();
-            WachtOpConfirm();
-            client.close();
-            chatPanel.End();
+            catch (Exception e)
+            {
+                ErrorEndAstrand(e.Message);
+                client.close();
+                chatPanel.End();
+            }
         }
 
+        //Confirm meganisme
+        #region
         public void WachtOpConfirm()
         {
+
             canConfirm = true;
             while (!confirmed)
             {
@@ -93,7 +122,10 @@ namespace WindowsFormsApp1
                 confirmed = true;
             }
         }
+        #endregion
 
+        //Warming up
+        #region
         public void WarmingUp()
         {
             chatPanel.UpdateText("Power word naar 50 gezet");
@@ -103,6 +135,7 @@ namespace WindowsFormsApp1
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
+                long beginTime = DateTime.Now.Ticks;
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
                 if (currentMeasurement % 10 == 0)
@@ -112,12 +145,13 @@ namespace WindowsFormsApp1
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand("Maximum pulse reached!");
+                    MaxHFReached = true;
                 }
                 currentMeasurement++;
-                Thread.Sleep(speed);
+                Wait100Ms(beginTime);
             }
         }
+        #endregion
 
         public void RealTest()
         {
@@ -130,6 +164,8 @@ namespace WindowsFormsApp1
             }
         }
 
+        //Real test Phase 1
+        #region
         public void RealTestPhase1()
         {
             //Measurements 1200 is 2 minuten voor de test
@@ -137,6 +173,7 @@ namespace WindowsFormsApp1
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
+                long beginTime = DateTime.Now.Ticks;
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
                 currentRPM = data.RPM;
@@ -144,14 +181,14 @@ namespace WindowsFormsApp1
                 {
                     chatPanel.UpdatePreviousText("Huidige power: " + (data.Actual_Power) + " Huidige RPM: " + data.RPM + " Huidige hartslag: " + data.Pulse + "\r\n\r\n" + "Testphase 1: " + (measurements - currentMeasurement) / 10 + " seconden\r\n");
                     SendData(data);
-                    if (data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
-                    {
-                        client.SetPower(data.Actual_Power + 5);
-                    }
+                }
+                if (currentMeasurement % 30 == 0 && data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
+                {
+                    client.SetPower(data.Actual_Power + 5);
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand("Maximum pulse reached!");
+                    MaxHFReached = true;
                 }
                 if (data.Pulse >= 130 && !ReadyState130)
                 {
@@ -160,10 +197,13 @@ namespace WindowsFormsApp1
                 }
                 currentMeasurement++;
                 chatPanel.Invalidate();
-                Thread.Sleep(speed);
+                Wait100Ms(beginTime);
             }
         }
+        #endregion
 
+        //Real test phase 2
+        #region
         public void RealTestPhase2()
         {
             //Measurements 1200 is 2 minuten voor de test
@@ -171,6 +211,7 @@ namespace WindowsFormsApp1
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
+                long beginTime = DateTime.Now.Ticks;
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
                 currentRPM = data.RPM;
@@ -178,14 +219,14 @@ namespace WindowsFormsApp1
                 {
                     chatPanel.UpdatePreviousText("Huidige power: " + (data.Actual_Power) + " Huidige RPM: " + data.RPM + " Huidige hartslag: " + data.Pulse + "\r\n\r\n" + "Testphase 2: " + (measurements - currentMeasurement) / 10 + " seconden\r\n");
                     SendData(data);
-                    if (data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
-                    {
-                        client.SetPower(data.Actual_Power + 5);
-                    }
+                }
+                if (currentMeasurement % 30 == 0 && data.Pulse < 130 && currentRPM >= 50 && currentRPM <= 60)
+                {
+                    client.SetPower(data.Actual_Power + 5);
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand("Maximum pulse reached!");
+                    MaxHFReached = true;
                 }
                 if (currentMeasurement >= 1200)
                 {
@@ -201,10 +242,13 @@ namespace WindowsFormsApp1
                 }
                 currentMeasurement++;
                 chatPanel.Invalidate();
-                Thread.Sleep(speed);
+                Wait100Ms(beginTime);
             }
         }
+        #endregion
 
+        //Cooling down
+        #region
         public void CoolingDown()
         {
             currentRPM = 0;
@@ -216,6 +260,7 @@ namespace WindowsFormsApp1
             int currentMeasurement = 0;
             while (currentMeasurement <= measurements)
             {
+                long beginTime = DateTime.Now.Ticks;
                 ErgometerData data = client.GetErgoData();
                 this.measurements.Add(data);
                 if (currentMeasurement % 10 == 0)
@@ -225,12 +270,13 @@ namespace WindowsFormsApp1
                 }
                 if (HFAboveMaximum(data.Pulse))
                 {
-                    ErrorEndAstrand("Maximum pulse reached!");
+                    MaxHFReached = true;
                 }
                 currentMeasurement++;
-                Thread.Sleep(speed);
+                Wait100Ms(beginTime);
             }
         }
+        #endregion
 
         public void AddPulseForAvg(int pulse)
         {
@@ -245,6 +291,8 @@ namespace WindowsFormsApp1
             Pulse.Add(pulse);
         }
 
+        //Send data to server
+        #region
         public void SendData(ErgometerData data)
         {
             dynamic ergometerdata = new
@@ -263,7 +311,10 @@ namespace WindowsFormsApp1
             };
             client.Send(JsonConvert.SerializeObject(ergometerdata));
         }
+        #endregion
 
+        //HF above maximum
+        #region
         public Boolean HFAboveMaximum(int pulse)
         {
             if (age < 15)
@@ -278,39 +329,65 @@ namespace WindowsFormsApp1
             if (age >= 25 && age < 35)
             {
                 maxPulse = 200;
-                measureFactor = 1.00;
             }
             else if (age >= 35 && age < 40)
             {
                 maxPulse = 190;
-                measureFactor = 0.93;
             }
             else if (age >= 40 && age < 45)
             {
                 maxPulse = 180;
-                measureFactor = 0.83;
             }
             else if (age >= 45 && age < 50)
             {
                 maxPulse = 170;
-                measureFactor = 0.78;
             }
             else if (age >= 50 && age < 55)
             {
                 maxPulse = 160;
-                measureFactor = 0.75;
             }
             else if (age >= 55 && age < 60)
             {
                 maxPulse = 150;
-                measureFactor = 0.71;
-            }
-            else
-            {
-                measureFactor = 0.65;
             }
             return pulse > maxPulse;
         }
+        #endregion
+
+        //Get correctionfactor
+        #region
+        public double GetCorrectionFactor()
+        {
+            if (age >= 25 && age < 35)
+            {
+                return 1.00;
+            }
+            else if (age >= 35 && age < 40)
+            {
+                return 0.93;
+            }
+            else if (age >= 40 && age < 45)
+            {
+                return 0.83;
+            }
+            else if (age >= 45 && age < 50)
+            {
+                return 0.78;
+            }
+            else if (age >= 50 && age < 55)
+            {
+                return 0.75;
+            }
+            else if (age >= 55 && age < 60)
+            {
+                return 0.71;
+            }
+            else
+            {
+                return 0.65;
+            }
+        }
+        #endregion
 
         public void StopAstrandSucces()
         {
@@ -373,6 +450,8 @@ namespace WindowsFormsApp1
             this.weight = weight;
         }
 
+        //Calculate VO2max 
+        #region
         public double CalculateVO2()
         {
             double maxWatage = 0;
@@ -394,10 +473,10 @@ namespace WindowsFormsApp1
             }
 
             if (age >= 30)
-                VO2max *= measureFactor;
+                VO2max *= GetCorrectionFactor();
             return VO2max;
-
         }
+        #endregion
 
         public void ErrorEndAstrand(string error)
         {
@@ -406,6 +485,15 @@ namespace WindowsFormsApp1
             client.close();
             chatPanel.End();
             MessageBox.Show("Er is een error opgetreden:\r\n" + error);
+        }
+
+        public void Wait100Ms(long beginTicks)
+        {
+            long differencte = speed * TimeSpan.TicksPerMillisecond;
+            while (DateTime.Now.Ticks < beginTicks + differencte)
+            {
+                Thread.Sleep(1);
+            }
         }
     }
 }

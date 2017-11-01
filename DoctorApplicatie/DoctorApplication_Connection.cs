@@ -181,7 +181,7 @@ namespace DoctorApplicatie
                     string error = (string) jsonData.data.data.status;
                     new Thread(() =>
                     {
-                        MessageBox.Show("Error in de gevolgde astrand test van patient " + patientid + "\r\nOpgetrede fout: " + error);
+                        MessageBox.Show("Error in de gevolgde astrand test van patient: " + patientid + "\r\nOpgetrede fout: " + error);
                     }).Start();
                 }
             }
