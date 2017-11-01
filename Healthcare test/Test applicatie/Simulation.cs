@@ -54,6 +54,7 @@ namespace Healthcare_test.test_applicatie
         {
             while (ShouldCount)
             {
+                long beginTime = DateTime.Now.Ticks;
                 try
                 {
                     CurrentTime.Timer();
@@ -79,7 +80,7 @@ namespace Healthcare_test.test_applicatie
                     
                 }
 
-                Thread.Sleep(1000);
+                Wait1s(beginTime);
             }
         }
 
@@ -136,6 +137,15 @@ namespace Healthcare_test.test_applicatie
             CountThread = new Thread(new ThreadStart(Count));
             CountThread.Start();
 
+        }
+
+        public void Wait1s(long beginTicks)
+        {
+            long differencte = 1000 * TimeSpan.TicksPerMillisecond;
+            while (DateTime.Now.Ticks < beginTicks + differencte)
+            {
+                Thread.Sleep(10);
+            }
         }
     }
 }

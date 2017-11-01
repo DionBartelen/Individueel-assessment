@@ -30,7 +30,7 @@ namespace WindowsFormsApp1
         private Boolean confirmed;
         private Client client;
 
-        private readonly int speed = 10;
+        private readonly int speed = 100;
 
         public Astrand(ChatPanel chatPanel, Client client)
         {
@@ -489,8 +489,8 @@ namespace WindowsFormsApp1
 
         public void Wait100Ms(long beginTicks)
         {
-            long differencte = speed * TimeSpan.TicksPerMillisecond;
-            while (DateTime.Now.Ticks < beginTicks + differencte)
+            long difference = speed * TimeSpan.TicksPerMillisecond;
+            while (DateTime.Now.Ticks < (beginTicks + difference))
             {
                 Thread.Sleep(1);
             }
